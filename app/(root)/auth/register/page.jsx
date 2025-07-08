@@ -13,43 +13,74 @@ import React, { useState } from "react";
 import logo from "@/public/assets/social.png";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { zSchema } from "@/lib/zodSchema";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import ButtonLoading from "@/components/Application/ButtonLoading";
-import z from "zod";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
-import { WEBSITE_REGISTER } from "@/routes/WebsiteRoute";
+import { WEBSITE_LOGIN } from "@/routes/WebsiteRoute";
+import { zSchema } from "@/lib/zodSchema";
+import axios from "axios";
+import z from "zod";
 
-const Loginpage = () => {
+const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [isTypePassword, setIsTypePassword] = useState(true);
+
   const formSchema = zSchema
     .pick({
+      name: true,
       email: true,
+      password: true,
     })
     .extend({
-      password: z.string().min("3", "Password field id required"),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Password and confirm password must be same.",
+      path: ["confirmPassword"],
     });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const handleLoginSubmit = async (values) => {
-    console.log(values);
+  const handleRegisterSubmit = async (values) => {
+    try {
+      setLoading(true);
+      const { data: registerResponse } = await axios.post(
+        "/api/auth/register",
+        values
+      );
+      if (!registerResponse.success) {
+        const errMsg =
+          typeof registerResponse.message === "string"
+            ? registerResponse.message
+            : registerResponse.message?.message || "Registration failed";
+
+        throw new Error(errMsg);
+      }
+
+      form.reset();
+      alert(registerResponse.message);
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-tr from-sky-100 via-white to-indigo-100 flex items-center justify-center px-4">
       <Card className="w-full max-w-md rounded-2xl shadow-2xl border border-gray-200 bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          {/* Logo Section */}
+          {/* Logo */}
           <div className="flex justify-center mb-4">
             <div className="relative w-[110px] h-[110px] rounded-full bg-gradient-to-br from-indigo-200 via-white to-sky-200 p-1 shadow-lg">
               <div className="w-full h-full rounded-full bg-white/40 backdrop-blur-md flex items-center justify-center hover:scale-105 transition-transform duration-300 ease-in-out">
@@ -64,21 +95,40 @@ const Loginpage = () => {
             </div>
           </div>
 
-          {/* Header Text */}
+          {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Welcome Back</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Login to your account below
-            </p>
+            <h1 className="text-3xl font-bold text-gray-800">Get Started</h1>
+            <p className="text-sm text-gray-500 mt-1">Create your account</p>
           </div>
 
-          {/* Login Form */}
+          {/* Form */}
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleLoginSubmit)}
+              onSubmit={form.handleSubmit(handleRegisterSubmit)}
               className="space-y-6"
             >
-              {/* Email Field */}
+              {/* Full Name */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Full Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="John Doe"
+                        {...field}
+                        className="rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-300 focus:outline-none transition w-full"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
@@ -89,8 +139,8 @@ const Loginpage = () => {
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="you@example.com"
                         type="email"
+                        placeholder="you@example.com"
                         {...field}
                         className="rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-300 focus:outline-none transition w-full"
                       />
@@ -100,7 +150,7 @@ const Loginpage = () => {
                 )}
               />
 
-              {/* Password Field */}
+              {/* Password */}
               <FormField
                 control={form.control}
                 name="password"
@@ -129,31 +179,45 @@ const Loginpage = () => {
                 )}
               />
 
-              {/* Forgot Password Link */}
-              <div className="text-right text-sm text-indigo-600 hover:underline">
-                <a href="/forgot-password">Forgot password?</a>
-              </div>
+              {/* Confirm Password */}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Confirm Password
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                        className="rounded-lg px-4 py-2 border focus:ring-2 focus:ring-indigo-300 focus:outline-none transition w-full"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs text-red-500" />
+                  </FormItem>
+                )}
+              />
 
               {/* Submit Button */}
               <div className="pt-1">
                 <ButtonLoading
                   loading={loading}
                   type="submit"
-                  text="Login"
+                  text="Register"
                   className="w-full rounded-lg cursor-pointer"
                 />
               </div>
             </form>
           </Form>
 
-          {/* Signup Link */}
-          <div className="mt-2 text-center text-sm text-gray-600">
-            Don’t have an account?{" "}
-            <a
-              href={WEBSITE_REGISTER}
-              className="text-indigo-600 hover:underline"
-            >
-              Sign up
+          {/* Login Link */}
+          <div className="mt-4 text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <a href={WEBSITE_LOGIN} className="text-indigo-600 hover:underline">
+              Login
             </a>
           </div>
         </CardContent>
@@ -162,4 +226,4 @@ const Loginpage = () => {
   );
 };
 
-export default Loginpage;
+export default RegisterPage;
