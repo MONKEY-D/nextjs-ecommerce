@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { WEBSITE_HOME } from '@/routes/WebsiteRoute'
+import {use} from 'react'
 
 const EmailVerification = ({ params }) => {
     const { token } = use(params)
@@ -16,7 +17,7 @@ const EmailVerification = ({ params }) => {
     useEffect(() => {
         const verify = async () => {
             const { data: verificationResponse } = await axios.post('/api/auth/verify-email', { token })
-            if (!verificationResponse.success) {
+            if (verificationResponse.success) {
                 setIsVerified(true)
             }
         }

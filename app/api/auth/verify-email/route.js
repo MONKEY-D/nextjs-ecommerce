@@ -1,7 +1,8 @@
 import { connectDB } from "@/lib/databaseConnection";
-import { catchError } from "@/lib/helperFunctions";
+import { catchError, response } from "@/lib/helperFunctions";
 import UserModel from "@/models/user.model";
 import { jwtVerify } from "jose";
+import { isValidObjectId } from "mongoose";
 
 export async function POST(request) {
   try {
@@ -11,8 +12,15 @@ export async function POST(request) {
       return response(false, 400, 'Missing token')
     }
     const secret = new TextEncoder().encode(process.env.SECRET_KEY)
-    const decode = await jwtVerify(token, secret)
-    const userId = decode.payload.userId
+    const decoded = await jwtVerify(token, secret)
+    const userId = decoded.payload.userId
+
+    console.log(decoded);
+
+
+    if (!isValidObjectId(userId)) {
+      return response(false, 404, 'Invalid user id.', userId)
+    }
 
     const user = await UserModel.findById(userId)
     if (!user) {

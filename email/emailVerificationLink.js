@@ -1,5 +1,5 @@
 export const emailVerificationLink = (link) => {
-  const html = `
+    const html = `
 <!DOCTYPE html>
 <html lang="en" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml">
 
@@ -207,9 +207,7 @@ export const emailVerificationLink = (link) => {
                                                                     <p style="margin: 10px;"><strong>Note:</strong> This link will expire in 1 hours. If you did not create an account, you can safely ignore this email.</p>
                                                                          
                                                                     <p style="margin: 0;">Thank you,<br />
-                                                                        <a href="https://www.youtube.com/@developergoswami"
-                                                                            target="_blank">Developer
-                                                                            Goswami</a>
+                                                                        <a>Kartik Verma</a>
                                                                     </p>
                                                                 </div>
                                                             </td>
@@ -233,5 +231,5 @@ export const emailVerificationLink = (link) => {
 
       `;
 
-  return html;
+    return html;
 };
